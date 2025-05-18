@@ -3,6 +3,7 @@ import {
   CustomerField,
   CustomersTableType,
   InvoiceForm,
+  CustomerForm,
   InvoicesTable,
   LatestInvoiceRaw,
   Revenue,
@@ -181,6 +182,28 @@ export async function fetchCustomers() {
   } catch (err) {
     console.error('Database Error:', err);
     throw new Error('Failed to fetch all customers.');
+  }
+}
+
+export async function fetchCustomerById(id: string) {
+  try {
+    const data = await sql<CustomerForm[]>`
+      SELECT
+        customers.id,
+        customers.name,
+        customers.email,
+        customers.image_url
+      FROM
+        customers
+      WHERE
+        customers.id = ${id};
+    `;
+
+    return data[0];
+
+  } catch (error) {
+    console.error('Database error:', error);
+    throw new Error('Faiöed to fetch customer.');
   }
 }
 

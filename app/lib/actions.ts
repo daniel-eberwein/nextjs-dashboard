@@ -19,8 +19,18 @@ const FormSchema = z.object({
     date: z.string()
 });
 
+const CustomerFormSchema = z.object({
+    id: z.string(),
+    name: z.string().nonempty({ message: 'Please enter a name.' }),
+    email: z.string().email({ message: 'Please enter a valid email' }),
+    image_url: z.string({
+        invalid_type_error: 'Please upload an image.'
+    }).url(),
+})
+
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+const UpdateCustomer = CustomerFormSchema.omit({ id: true, image_url: true });
 
 export async function authenticate(prevState: string | undefined, formData: FormData) {
     try {
@@ -43,6 +53,15 @@ export type State = {
         customerId?: string[];
         amount?: string[];
         status?: string[];
+    };
+    message?: string | null;
+}
+
+export type CustomerState = {
+    errors?: {
+        name?: string[];
+        email?: string[];
+        //image_url?: string[];
     };
     message?: string | null;
 }
@@ -115,6 +134,44 @@ export async function updateInvoice(id: string, prevState: State, formData: Form
     }
     revalidatePath('/dashboard/invoices');
     redirect('/dashboard/invoices');
+
+}
+
+export async function updateCustomer(id: string, prevState: CustomerState, formData: FormData) {
+    const validatedFields = UpdateCustomer.safeParse({
+        name: formData.get('name'),
+        email: formData.get('email'),
+        //image_url: formData.get('image_url'),
+    });
+
+    console.log(validatedFields.data);
+    console.log(validatedFields.success);
+
+    if (!validatedFields.success) {
+        console.log("Melde Fehler zurück...");
+        console.log(validatedFields.error.flatten().fieldErrors);
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Missing Fields. Failed to Update Invoice.'
+        };
+    }
+
+    const { name, email } = validatedFields.data;
+
+    try {
+        await sql`
+          UPDATE customers
+          SET name = ${name}, email = ${email}
+          WHERE id = ${id}
+        `;
+
+    } catch (error) {
+        console.error(error);
+        return { message: 'Database Error. Failed to Update Customer.' };
+    }
+    revalidatePath('/dashboard/customers');
+    revalidatePath('/dashboard/invoices');
+    redirect('/dashboard/customers');
 
 }
 
