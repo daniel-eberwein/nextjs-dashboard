@@ -7,12 +7,12 @@ import {
   CameraIcon
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
-import { createCustomer, CustomerState } from '@/app/lib/actions';
+import { createCustomer, CustomerCreateState } from '@/app/lib/actions';
 import { useActionState } from 'react';
 
 export default function CreateCustomerForm() {
 
-  const initialState: CustomerState = {
+  const initialState: CustomerCreateState = {
     message: null,
     errors: {}
   };

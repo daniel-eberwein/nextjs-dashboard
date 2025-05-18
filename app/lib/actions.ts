@@ -56,11 +56,19 @@ export type State = {
     message?: string | null;
 }
 
-export type CustomerState = {
+export type CustomerCreateState = {
     errors?: {
         name?: string[];
         email?: string[];
         image_url?: string[];
+    };
+    message?: string | null;
+}
+
+export type CustomerUpdateState = {
+    errors?: {
+        name?: string[];
+        email?: string[];
     };
     message?: string | null;
 }
@@ -101,7 +109,7 @@ export async function createInvoice(prevState: State, formData: FormData) {
     redirect('/dashboard/invoices');
 
 }
-export async function createCustomer(prevState: CustomerState, formData: FormData) {
+export async function createCustomer(prevState: CustomerCreateState, formData: FormData) {
 
     const validatedFields = CreateCustomer.safeParse({
         name: formData.get('name'),
@@ -172,19 +180,14 @@ export async function updateInvoice(id: string, prevState: State, formData: Form
 
 }
 
-export async function updateCustomer(id: string, prevState: CustomerState, formData: FormData) {
+export async function updateCustomer(id: string, prevState: CustomerUpdateState, formData: FormData) {
     const validatedFields = UpdateCustomer.safeParse({
         name: formData.get('name'),
         email: formData.get('email'),
         //image_url: formData.get('image_url'),
     });
 
-    console.log(validatedFields.data);
-    console.log(validatedFields.success);
-
     if (!validatedFields.success) {
-        console.log("Melde Fehler zurück...");
-        console.log(validatedFields.error.flatten().fieldErrors);
         return {
             errors: validatedFields.error.flatten().fieldErrors,
             message: 'Missing Fields. Failed to Update Invoice.'

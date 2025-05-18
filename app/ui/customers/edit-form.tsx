@@ -7,7 +7,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
-import { CustomerState, updateCustomer } from '@/app/lib/actions';
+import { CustomerUpdateState, updateCustomer } from '@/app/lib/actions';
 import { useActionState } from 'react';
 
 export default function EditCustomerForm({
@@ -16,7 +16,7 @@ export default function EditCustomerForm({
     customer: CustomerForm;
 }) {
 
-    const initialState: CustomerState = { message: null, errors: {} };
+    const initialState: CustomerUpdateState = { message: null, errors: {} };
     const updateCustomerWithId = updateCustomer.bind(null, customer.id);
     const [state, formAction] = useActionState(updateCustomerWithId, initialState);
 
