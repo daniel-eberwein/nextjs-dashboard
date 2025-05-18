@@ -23,14 +23,13 @@ const CustomerFormSchema = z.object({
     id: z.string(),
     name: z.string().nonempty({ message: 'Please enter a name.' }),
     email: z.string().email({ message: 'Please enter a valid email' }),
-    image_url: z.string({
-        invalid_type_error: 'Please upload an image.'
-    }).url(),
+    image_url: z.string().url({ message: 'Please enter valid URL to an image' }),
 })
 
 const CreateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 const UpdateCustomer = CustomerFormSchema.omit({ id: true, image_url: true });
+const CreateCustomer = CustomerFormSchema.omit({ id: true });
 
 export async function authenticate(prevState: string | undefined, formData: FormData) {
     try {
@@ -61,7 +60,7 @@ export type CustomerState = {
     errors?: {
         name?: string[];
         email?: string[];
-        //image_url?: string[];
+        image_url?: string[];
     };
     message?: string | null;
 }
@@ -100,6 +99,42 @@ export async function createInvoice(prevState: State, formData: FormData) {
     revalidatePath('/dashboard/invoices');
     revalidatePath('/dashboard');
     redirect('/dashboard/invoices');
+
+}
+export async function createCustomer(prevState: CustomerState, formData: FormData) {
+
+    const validatedFields = CreateCustomer.safeParse({
+        name: formData.get('name'),
+        email: formData.get('email'),
+        image_url: formData.get('image_url'),
+    });
+
+    console.log(validatedFields.data);
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Missing Fields. Failed to Create Customer.'
+        };
+    }
+
+    const { name, email, image_url } = validatedFields.data;
+
+    try {
+        await sql`
+    INSERT INTO customers (name, email, image_url)
+    VALUES (${name}, ${email}, ${image_url})
+    `;
+    } catch (error) {
+        console.error(error);
+        return {
+            message: 'Database Error: Failed to Create Customer.',
+        };
+    }
+
+    revalidatePath('/dashboard');
+    revalidatePath('/dashboard/customers');
+    redirect('/dashboard/customers');
 
 }
 
